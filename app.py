@@ -2,16 +2,25 @@ from flask import Flask, jsonify
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import os
+import json
 
 app = Flask(__name__)
 
 # إعداد Google Drive API باستخدام Service Account
 SCOPES = ['https://www.googleapis.com/auth/drive']
-SERVICE_ACCOUNT_FILE = 'service_account.json'  # مسار ملف Service Account JSON
 
 def get_drive_service():
-    credentials = service_account.Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+    # قراءة بيانات الاعتماد من متغير البيئة
+    service_account_info = os.getenv('SERVICE_ACCOUNT_JSON')
+    if not service_account_info:
+        raise ValueError("SERVICE_ACCOUNT_JSON environment variable not set")
+    
+    # تحويل السلسلة إلى JSON
+    credentials_info = json.loads(service_account_info)
+    
+    # إنشاء بيانات الاعتماد
+    credentials = service_account.Credentials.from_service_account_info(
+        credentials_info, scopes=SCOPES)
     return build('drive', 'v3', credentials=credentials)
 
 # الحصول على معرف المجلد (Folder ID) من Google Drive
@@ -65,6 +74,11 @@ def get_books():
             })
 
     return jsonify(books)
+
+# إضافة رد افتراضي للمسار الجذر (اختياري)
+@app.route('/', methods=['GET'])
+def index():
+    return jsonify({"message": "Welcome to Adan Books API. Use /getBooks to retrieve books."})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
