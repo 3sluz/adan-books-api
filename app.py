@@ -1,26 +1,18 @@
 from flask import Flask, jsonify
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
+from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import os
 
 app = Flask(__name__)
 
-# إعداد Google Drive API
+# إعداد Google Drive API باستخدام Service Account
 SCOPES = ['https://www.googleapis.com/auth/drive']
-CREDS_FILE = 'credentials.json'  # استبدل بمسار ملف credentials.json
-TOKEN_FILE = 'token.json'  # سيتم إنشاؤه تلقائيًا بعد المصادقة
+SERVICE_ACCOUNT_FILE = 'service_account.json'  # مسار ملف Service Account JSON
 
 def get_drive_service():
-    creds = None
-    if os.path.exists(TOKEN_FILE):
-        creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
-    if not creds or not creds.valid:
-        flow = InstalledAppFlow.from_client_secrets_file(CREDS_FILE, SCOPES)
-        creds = flow.run_local_server(port=0)
-        with open(TOKEN_FILE, 'w') as token:
-            token.write(creds.to_json())
-    return build('drive', 'v3', credentials=creds)
+    credentials = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+    return build('drive', 'v3', credentials=credentials)
 
 # الحصول على معرف المجلد (Folder ID) من Google Drive
 def get_folder_id(drive_service, folder_name):
