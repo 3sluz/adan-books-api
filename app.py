@@ -50,7 +50,7 @@ def get_books():
 
         # الحصول على معرفات المجلدات
         books_folder_id = get_folder_id(drive_service, 'AdanBooks')
-        images_folder_id = get_folder_id(drive_service, 'AdanBooks/Images')
+        images_folder_id = get_folder_id(drive_service, 'AdanBooks')
         logger.info(f"Books folder ID: {books_folder_id}, Images folder ID: {images_folder_id}")
 
         # جلب ملفات PDF من مجلد AdanBooks
@@ -63,7 +63,7 @@ def get_books():
         image_query = f"'{images_folder_id}' in parents and (mimeType='image/jpeg' or mimeType='image/png') and trashed=false"
         image_results = drive_service.files().list(q=image_query, spaces='drive', fields='files(id, name)').execute()
         image_files = image_results.get('files', [])
-        logger.info(f"Found {len(image_files)} image files in AdanBooks/Images: {[f['name'] for f in image_files]}")
+        logger.info(f"Found {len(image_files)} image files in AdanBooks: {[f['name'] for f in image_files]}")
 
         books = []
         images_url = 'https://drive.google.com/uc?export=download&id='
